@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import "./styles.css";
 const decoder = new TextDecoder();
 export default function App() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<{message: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     setIsLoading(true);
     (async () => {
       // https://mock.knnect.com/api/stream
       const response = await fetch("https://apis.knnect.com/stream");
+      if(!response.body) {
+        return
+      }
       const reader = response.body.getReader();
 
       let done = false;
@@ -17,7 +20,7 @@ export default function App() {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
 
-        decodedValue = decoder.decode(value);
+        const decodedValue = decoder.decode(value);
         try {
           const data = JSON.parse(decodedValue);
           setMessages((currentMsg) => [...currentMsg, data]);
